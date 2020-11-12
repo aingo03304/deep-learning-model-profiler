@@ -19,7 +19,6 @@ def check_model_support(model_sign):
         return True
     return False
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str, required=False)
