@@ -146,6 +146,21 @@ MODEL_LIST = {
     },
 }
 
+def check_model_sign(model_name, framework, model_sign):
+    if model_name + ":" + framework == model_sign:
+        return True
+    elif framework and model_name:
+        return True
+    elif model_sign:
+        return True
+    return False
+
+def check_model_support(model_sign): 
+    model_name, framework = model_sign.split(":")
+    if model_name in util.MODEL_LIST and framework in util.MODEL_LIST[model_name]:
+        return True
+    return False
+
 def get_model_by_sign(model_sign):
     model_name, framework = model_sign.split(":")
     return MODEL_LIST[model_name][framework]

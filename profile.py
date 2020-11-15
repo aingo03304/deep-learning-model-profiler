@@ -4,21 +4,11 @@ from dlmp.exception import (
     UnsupportedModelError,
     InvalidArgumentError
 )
+from dlmp.util import (
+    check_model_sign,
+    check_model_support,
+)
 
-def check_model_sign(model_name, framework, model_sign):
-    if model_name + ":" + framework == model_sign:
-        return True
-    elif framework and model_name:
-        return True
-    elif model_sign:
-        return True
-    return False
-
-def check_model_support(model_sign): 
-    model_name, framework = model_sign.split(":")
-    if model_name in util.MODEL_LIST and framework in util.MODEL_LIST[model_name]:
-        return True
-    return False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -27,6 +17,8 @@ if __name__ == "__main__":
     parser.add_argument('--model_sign', type=str, required=False)
     parser.add_argument('--batch_size', type=int, required=False, default=32)
     parser.add_argument('--max_iter', type=int, required=False, default=50)
+    parser.add_argument('--model_file', type=str, required=False)
+    parser.add_argument('--dataset', type=str, required=False)
     args = parser.parse_args()
     
     if not check_model_sign(args.model_name, args.framework, args.model_sign):
