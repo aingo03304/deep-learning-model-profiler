@@ -9,7 +9,6 @@ from dlmp.util import (
     check_model_support,
 )
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str, required=False)

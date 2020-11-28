@@ -1,3 +1,7 @@
+"""
+Exception
+"""
+
 class UnsupportedModelError(Exception):
     pass
 
