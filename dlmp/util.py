@@ -1,5 +1,15 @@
+import torch
+import torch.optim as torchoptim
+import tensorflow
+import tensorflow.keras.optimizers as tfoptim
 import torchvision.models as torchmodels
 import tensorflow.keras.applications as tfmodels
+from exception import (
+    UnsupportedFrameworkError,
+)
+from typing import Union
+
+FRAMEWORK_LIST = ['pytorch', 'tensorflow']
 
 MODEL_LIST = {
     'AlexNet': {
@@ -32,21 +42,21 @@ MODEL_LIST = {
         'pytorch': torchmodels.vgg19_bn,
     },
     'ResNet-18': {
-        'pytorch': torchmodels.restnet18,
+        'pytorch': torchmodels.resnet18,
     },
     'ResNet-34': {
-        'pytorch': torchmodels.restnet34,
+        'pytorch': torchmodels.resnet34,
     },
     'ResNet-50': {
-        'pytorch': torchmodels.restnet50,
+        'pytorch': torchmodels.resnet50,
         'tensorflow': tfmodels.ResNet50,
     },
     'ResNet-101': {
-        'pytorch': torchmodels.restnet101,
+        'pytorch': torchmodels.resnet101,
         'tensorflow': tfmodels.ResNet101,
     },
     'ResNet-152': {
-        'pytorch': torchmodels.restnet152,
+        'pytorch': torchmodels.resnet152,
         'tensorflow': tfmodels.ResNet152,
     },
     'ResNet-50-v2': {
@@ -100,10 +110,10 @@ MODEL_LIST = {
         'tensorflow': tfmodels.MobileNetV2,
     },
     'ResNeXt-50-32x4d': {
-        'pytorch': resnext50_32x4d,
+        'pytorch': torchmodels.resnext50_32x4d,
     },
     'ResNeXt-101-32x8d': {
-        'pytorch': resnext50_32x8d,
+        'pytorch': torchmodels.resnext101_32x8d,
     },
     'Wide-ResNet-50-2': {
         'pytorch': torchmodels.wide_resnet50_2,
@@ -146,21 +156,123 @@ MODEL_LIST = {
     },
 }
 
-def check_model_sign(model_name, framework, model_sign):
-    if model_name + ":" + framework == model_sign:
-        return True
-    elif framework and model_name:
-        return True
-    elif model_sign:
-        return True
-    return False
+OPTIM_LIST = {
+    'Adadelta': {
+        'pytorch': torchoptim.Adadelta,
+        'tensorflow': tfoptim.Adadelta,
+    },
+    'Adagrad': {
+        'pytorch': torchoptim.Adagrad,
+        'tensorflow': tfoptim.Adagrad,
+    },
+    'Adam': {
+        'pytorch': torchoptim.Adam,
+        'tensorflow': tfoptim.Adam,
+    },
+    'AdamW': {
+        'pytorch': torchoptim.AdamW,
+    },
+    'SparseAdam': {
+        'pytorch': torchoptim.SparseAdam,
+    },
+    'Adamax': {
+        'pytorch': torchoptim.Adamax,
+        'tensorflow': tfoptim.Adamax,
+    },
+    'ASGD': {
+        'pytorch': torchoptim.ASGD,
+    },
+    'LBFGS': {
+        'pytorch': torchoptim.LBFGS,
+    },
+    'RMSprop': {
+        'pytorch': torchoptim.RMSprop,
+        'tensorflow': tfoptim.RMSprop,
+    },
+    'Rprop': {
+        'pytorch': torchoptim.Rprop,
+    },
+    'SGD': {
+        'pytorch': torchoptim.SGD,
+        'tensorflow': tfoptim.SGD
+    },
+    'Ftrl': {
+        'tensorflow': tfoptim.Ftrl,
+    },
+    'Nadam': {
+        'tensorflow': tfoptim.Nadam,
+    }
+}
 
-def check_model_support(model_sign): 
-    model_name, framework = model_sign.split(":")
-    if model_name in util.MODEL_LIST and framework in util.MODEL_LIST[model_name]:
-        return True
-    return False
+def check_framework_support(framework: str) -> bool:
+    """Check the given framework is supported or not.
 
-def get_model_by_sign(model_sign):
-    model_name, framework = model_sign.split(":")
-    return MODEL_LIST[model_name][framework]
+    Args:
+        framework (str): A framework name (pytorch or tensorflow)
+
+    Returns:
+        bool: Whether the given framework is supported or not.
+    """    
+    return framework in FRAMEWORK_LIST
+
+def check_model_support(model_name: str, framework: str) -> bool: 
+    """Check the given model signature is supported or not.
+
+    Args:
+        model_name (str): A model name
+        framework (str): A framework name (pytorch or tensorflow)
+
+    Returns:
+        bool: Whether the given model signature is supported or not.
+    """    
+    return model_name in MODEL_LIST and framework in MODEL_LIST[model_name]
+
+def check_optim_support(optim_name: str, framework: str) -> bool:
+    """Check the given optimizer signature is supported or not.
+
+    Args:
+        optim_name (str): A optimizer name
+        framework (str): A framework name (pytorch or tensorflow)
+
+    Returns:
+        bool: Whether the given optimizer signature is supported or not.
+    """    
+    return optim_name in OPTIM_LIST and framework in OPTIM_LIST[optim_name]
+
+def get_model(model_name: str, 
+              framework: str,
+              pretrained: bool = True) -> Union[torch.nn.Module, tensorflow.keras.Model]:
+    """Get model from the given model signature.
+
+    Args:
+        model_name (str): A model name
+        framework (str): A framework name (pytorch or tensorflow)
+        pretrained (bool, optional): Whether it loads weights pretrained with imagenet or not. Defaults to True.
+
+    Returns:
+        Union[torch.nn.Module, tensorflow.keras.Model]: The model object from the target framework.
+    """    
+
+    if framework == "pytorch":
+        return MODEL_LIST[model_name]['pytorch'](pretrained=pretrained)
+    elif framework == "tensorflow":
+        return MODEL_LIST[model_name]['tensorflow'](weights='imagenet' if pretrained else None)
+
+def get_optim(optim_name: str,
+              framework: str,
+              learning_rate: float = 0.1) -> Union[torch.optim.Optimizer, tensorflow.keras.optimizers.Optimizer]:
+    """[summary]
+
+    Args:
+        optim_name (str): An optimizer name
+        framework (str): A framework name (pytorch or tenosorflow)
+        learning_rate (float, optional): A learning rate. Defaults to 0.1.
+
+    Returns:
+        Union[torch.optim.Optimizer, tensorflow.keras.optimizers.Optimizer]: The optimizer object from the target framework.
+    """    
+    if framework == 'pytorch':
+        return OPTIM_LIST[optim_name]['pytorch'](lr=learning_rate)
+    elif framework == 'tensorflow':
+        return OPTIM_LIST[optim_name]['tensorflow'](learning_rate=learning_rate)
+    

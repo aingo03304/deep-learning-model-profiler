@@ -2,8 +2,14 @@
 Exception
 """
 
-class UnsupportedModelError(Exception):
+class DLMPException(Exception):
     pass
 
-class InvalidArgumentError(Exception):
+class UnsupportedModelError(DLMPException):
+    pass
+
+class UnsupportedFrameworkError(DLMPException):
+    pass
+
+class InvalidArgumentError(DLMPException):
     pass
